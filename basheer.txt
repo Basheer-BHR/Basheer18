@@ -1,0 +1,40 @@
+import serial
+import time
+import requests
+
+# Configure the serial port for communication with Arduino
+arduino_port = 'COM3'  # Replace with the correct COM port of your Arduino
+baud_rate = 9600
+
+# ThingSpeak API Key and Channel ID
+api_key = 'FTIMRP2IKSZREZWV'
+channel_id = '2303557'
+
+# Define the URL for ThingSpeak
+thingspeak_url = f'https://thingspeak.com/channels/2303557/private_show'
+
+# Initialize the serial connection
+arduino = serial.Serial(arduino_port, baud_rate)
+
+try:
+    while True:
+        # Read data from Arduino
+        data = arduino.readline().decode().strip()
+
+        if data:
+            # Print the noise data for debugging
+            print(f'Noise Level: {data}')
+
+            # Send data to ThingSpeak
+            response = requests.get(thingspeak_url + f'&field1={data}')
+
+            if response.status_code == 200:
+                print('Data sent to ThingSpeak successfully.')
+            else:
+                print('Failed to send data to ThingSpeak.')
+
+        time.sleep(15)  # Adjust the interval as needed (15 seconds in this example)
+
+except KeyboardInterrupt:
+    arduino.close()
+    print('Monitoring stopped.')
